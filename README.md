@@ -39,14 +39,14 @@ That attribute is optional. It defaults to sensible locations depending on your 
 Usage
 =====
 
-This cookbook defines two LWRPS: `diptables_rule` and `diptables_policy`, that you can use in your recipes, after telling Chef! that your cookbook depends on this one (just put `depends 'diptables'` in your `metadata.rb` file).
+This cookbook defines three LWRPS: `diptables_rule`, `diptables_tcp_rule` and `diptables_policy`, that you can use in your recipes, after telling Chef! that your cookbook depends on this one (just put `depends 'diptables'` in your `metadata.rb` file).
 
 Please note that you need to include the `recipe[diptables]` in your run list *AFTER* the recipe(s) using these resources to actually commit your changes (will crash anyway otherwise).
 
 `diptables_rule` Resource
 -------------------------
 
-In its simpler form, that resource defines a single iptables rule, composed of a rule string (passed as-is to iptables), a table name, a chain name, and a jump target. Only the rule is mandatory, the other three default respectively to 'filter', 'INPUT', and 'ACCEPT'. For instance:
+In its simpler form, that resource defines a single iptables rule, composed of a rule string (passed as-is to iptables), a table name, a chain name, and a jump target. All the attributes are optional, and respectively to '' (empty string), 'filter', 'INPUT', and 'ACCEPT'. For instance:
 
     # Allow SSH
     diptables_rule 'ssh' do
@@ -80,6 +80,28 @@ And the best thing is, if you add a third server with the same role, it will aut
 Together with the `query` attribute, you can set the `same_environment` to `true` to retrieve only the nodes with the same Chef! environment as the current server.
 
 Please note that the syntax for the placeholders is the same as for Ruby's `sprintf` function (see http://www.ruby-doc.org/core-2.0.0/Kernel.html#method-i-format).
+
+`diptables_tcp_rule` Resource
+-----------------------------
+
+That resource is essentially an alias for `diptables_rule` resources to create rules for TCP connections. It defines the following self-explanatory attributes (with the default value in brackets, if any): table ('filter), chain ('INPUT'), jump ('ACCEPT'), interface, port, source (which can be either a string or an array of strings). For instance, the following is equivalent to the 'ssh' example above:
+
+    # Allow SSH
+    diptables_tcp_rule 'ssh' do
+      port 22
+    end
+
+It also supports the same querying system as the `diptables_rule` resources: just give a query in the `source_query` attribute. Optionally, you can specify what method to call on the resulting nodes to get their IP address (by default `ipaddress`) in the `source_method` attribute. Finally, the `same_environment` attribute works the same as for `diptables_rule` resources.
+The example below shows a fairly complex rule:
+
+    # Enable Elasticsearch servers to speak to each other
+    diptables_tcp_rule 'es_internal' do
+        interface 'eth1'
+        source_query 'roles:es-server'
+        source_method 'internal_ipaddress'
+        same_environment true
+        port '9300:9400'
+    end
 
 `diptables_policy` Resource
 ---------------------------
