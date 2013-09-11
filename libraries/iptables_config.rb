@@ -6,11 +6,12 @@ class IPTablesChain
         @name = name
         # the "undefined" policy for iptables
         @policy = '-'
-        @rules = Set.new
+        @rules =  []
     end
 
     def add_rule rule
-        !@rules.add?(rule).nil?
+        return false if @rules.include? rule
+        @rules << rule
     end
 
 end
