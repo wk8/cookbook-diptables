@@ -1,6 +1,6 @@
 case node['platform_family']
 when 'debian'
-    default['diptables_rules_path'] = '/etc/iptables-rules-wk'
+    default['diptables_rules_path'] = '/etc/iptables-rules'
 when 'rhel'
     default['diptables_rules_path'] = '/etc/sysconfig/iptables'
 else

@@ -39,9 +39,9 @@ That attribute is optional. It defaults to sensible locations depending on your 
 Usage
 =====
 
-This cookbook defines two LWRPS: `diptables_rule` and `diptables_policy`, that you can use in your recipes.
+This cookbook defines two LWRPS: `diptables_rule` and `diptables_policy`, that you can use in your recipes, after telling Chef! that your cookbook depends on this one (just put `depends 'diptables'` in your `metadata.rb` file).
 
-Please note that you need to include the `recipe[wk-iptables]` in your run list to actually commit your changes (will crash anyway otherwise).
+Please note that you need to include the `recipe[diptables]` in your run list *AFTER* the recipe(s) using these resources to actually commit your changes (will crash anyway otherwise).
 
 `diptables_rule` Resource
 -------------------------
