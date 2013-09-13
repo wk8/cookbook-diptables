@@ -18,17 +18,16 @@ end
 unless node['diptables']['dry_run']
     # set iptables to autolad
     case node['platform_family']
-        when 'debian'
-          # TODO: generalize this for other platforms somehow
-            file '/etc/network/if-up.d/iptables-rules' do
-                owner 'root'
-                group 'root'
-                mode '0755'
-                content "#!/bin/bash\niptables-restore < #{default['diptables']['rules_path']}\n"
-                action :create
-            end
-        else
-            Chef::Log.warn("Don't know how to set up automatic iptables on your distribution, sorry. Please submit a bug ticket at https://github.com/wk8/cookbook-iptables/issues")
+    when 'debian'
+      # TODO: generalize this for other platforms somehow
+        file '/etc/network/if-up.d/iptables-rules' do
+            owner 'root'
+            group 'root'
+            mode '0755'
+            content "#!/bin/bash\niptables-restore < #{default['diptables']['rules_path']}\n"
+            action :create
         end
+    else
+        Chef::Log.warn("Don't know how to set up automatic iptables on your distribution, sorry. Please submit a bug ticket at https://github.com/wk8/cookbook-iptables/issues")
     end
 end
