@@ -32,8 +32,8 @@ def build_rule
     if source
         @source = [source] if source.kind_of? String
         result = source.map{ |s| "#{rule}-s #{s}" }
-    elsif source_query
-        rule += "-s %<#{SOURCE_PLACEHOLDER}>s"
+    else
+        rule += "-s %<#{SOURCE_PLACEHOLDER}>s" if source_query
         result = [rule]
     end
     Chef::Log.debug("Rule built for #{name} : #{result}")
