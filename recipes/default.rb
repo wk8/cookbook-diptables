@@ -3,13 +3,13 @@
 
 unless node['diptables']['dry_run']
     execute 'reload-iptables' do
-        command "iptables-restore < #{default['diptables']['rules_path']}"
+        command "iptables-restore < #{node['diptables']['rules_path']}"
         user 'root'
         action :nothing
     end
 end
 
-template default['diptables']['rules_path'] do
+template node['diptables']['rules_path'] do
     source 'iptables_rules.erb'
     notifies :run, 'execute[reload-iptables]' unless node['diptables']['dry_run']
     action :create
@@ -24,7 +24,7 @@ unless node['diptables']['dry_run']
             owner 'root'
             group 'root'
             mode '0755'
-            content "#!/bin/bash\niptables-restore < #{default['diptables']['rules_path']}\n"
+            content "#!/bin/bash\niptables-restore < #{node['diptables']['rules_path']}\n"
             action :create
         end
     else
