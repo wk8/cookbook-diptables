@@ -31,10 +31,10 @@ update the supported platforms list.
 Attributes
 ==========
 
-This cookbook uses only one attribute: `diptables_rules_path`, which is the path to which we should save the current iptables rules set.
+This cookbook uses two attributes, both of which are optional:
 
-That attribute is optional. It defaults to sensible locations depending on your distribution.
-
+* `['diptables']['rules_path']` defines the path to which we should save the current iptables rules set. It defaults to sensible locations depending on your distribution.
+* `['diptables']['dry_run']` set that attribute to `true` to generate the new iptables rules set, but without actually loading it. This allows you to easily test your rules, and check what iptables configuration they would result in, without actually applying them yet. (Obviously defaults to `false`).
 
 Usage
 =====
