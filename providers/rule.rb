@@ -9,9 +9,9 @@ action :add do
     test_rules
 
     # then apply them
-    new_resource.updated_by_last_action node.iptables_config.add_rule new_resource
+    node.iptables_config.add_rule new_resource
+    new_resource.updated_by_last_action true
 end
-
 
 private
 

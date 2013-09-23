@@ -81,6 +81,8 @@ Together with the `query` attribute, you can set the `same_environment` to `true
 
 Please note that the syntax for the placeholders is the same as for Ruby's `sprintf` function (see http://www.ruby-doc.org/core-2.0.0/Kernel.html#method-i-format).
 
+Finally, a word on the `comment` attribute. Its default value, `true`, will simply use the name of the rule to comment it in the resulting rules file. Set it to `false` to not output any comment for the current rule, or simply set it to whatever `String` you want to be displayed as comment.
+
 `diptables_tcp_udp_rule` Resource
 ---------------------------------
 
@@ -91,6 +93,7 @@ That resource is essentially an alias for `diptables_rule` resources to create r
 * chain (default: 'INPUT')
 * proto (default: 'tcp')
 * jump (default: 'ACCEPT')
+* comment (default: true)
 * interface
 * dport (which can be either a Fixnum - e.g. 80 - a String - e.g '9300:9400' - or an Array of Strings and Fixnums - e.g. [80, 443, '9200:9400' - in which case it uses the `multiport` iptables module])
 * source (which can be either a string or an array of strings)
@@ -131,6 +134,9 @@ Same as the `diptables_rules` resource, it defaults to the 'filter' table and th
 
 Changes
 =======
+
+* 0.1.1 (Sep 23, 2013)
+    * Added the `comment` attribute
 
 * 0.1.0 (Sep 11, 2013)
     * Initial release

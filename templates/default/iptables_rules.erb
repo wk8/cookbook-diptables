@@ -5,7 +5,13 @@
 <% table.chains.each do |chain| %>
 :<%= "#{chain.name} #{chain.policy}" %> [0:0]
 <% chain.rules.each do |rule| %>
-<%= rule %>
+<% if rule.comment -%>
+# <%= rule.comment %>
+<% end -%>
+<% rule.rules.each do |single_rule| %>
+<%= single_rule %>
+<% end %>
+
 <% end -%>
 <% end -%>
 COMMIT

@@ -5,6 +5,7 @@ attribute :table, :kind_of => String, :default => 'filter'
 attribute :chain, :kind_of => String, :default => 'INPUT'
 attribute :rule, :kind_of => [String, Array], :default => ''
 attribute :jump, :kind_of => [String, FalseClass], :default => 'ACCEPT'
+attribute :comment, :kind_of => [TrueClass, FalseClass, String], :default => true
 # the query to be run to get the nodes towards which this rule will apply
 attribute :query, :kind_of => [String, FalseClass], :default => false
 # the placeholders inside the rule string (must be named placeholders, see http://www.ruby-doc.org/core-2.0.0/Kernel.html#method-i-format)
@@ -39,6 +40,13 @@ def rules
     end
     # and finally, create the actual string rules
     @rules.map! { |r| string_rule r }
+end
+
+alias_method :old_comment, :comment
+def comment *args
+    # we default to the name of the rule if no comment has been given, but comments haven't been disabled either
+    @comment = name if @comment == true
+    old_comment *args
 end
 
 private

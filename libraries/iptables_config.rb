@@ -10,7 +10,6 @@ class IPTablesChain
     end
 
     def add_rule rule
-        return false if @rules.include? rule
         @rules << rule
     end
 
@@ -45,14 +44,8 @@ class IPTablesConfig
         get_table(policy.table).get_chain(policy.chain).policy = policy.policy
     end
 
-    # returns true iff some part of the rule was indeed added (in particular, no duplicates)
     def add_rule rule
-        chain = get_table(rule.table).get_chain(rule.chain)
-        result = false
-        rule.rules.each do |r|
-            result = chain.add_rule(r) || result
-        end
-        result
+        get_table(rule.table).get_chain(rule.chain).add_rule(rule)
     end
 
     def tables
