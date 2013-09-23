@@ -4,7 +4,7 @@
 if node['diptables']['dry_run']
     Chef::Log.warn("Running diptables::default cookbook in dry_run mode, your iptables configuration won't be changed!")
 else
-    execute 'reload-iptables' do
+    execute 'diptables-reload-iptables' do
         command "iptables-restore < #{node['diptables']['rules_path']}"
         user 'root'
         action :nothing
@@ -13,7 +13,7 @@ end
 
 template node['diptables']['rules_path'] do
     source 'iptables_rules.erb'
-    notifies :run, 'execute[reload-iptables]' unless node['diptables']['dry_run']
+    notifies :run, 'execute[diptables-reload-iptables]' unless node['diptables']['dry_run']
     action :create
 end
 

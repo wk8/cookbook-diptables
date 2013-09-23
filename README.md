@@ -135,6 +135,10 @@ Same as the `diptables_rules` resource, it defaults to the 'filter' table and th
 Changes
 =======
 
+* 0.1.2 (Sep 23, 2013)
+    * Forcing the iptables reload action when disabling the `dry_run` mode
+    * Fixing possible name collision
+
 * 0.1.1 (Sep 23, 2013)
     * Added the `comment` attribute
 
