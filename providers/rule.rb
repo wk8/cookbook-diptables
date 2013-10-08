@@ -19,15 +19,19 @@ private
 TEST_CHAIN_NAME = '_CHEF_IPTABLES_TEST'
 
 def test_rules
-    shell_out("iptables --table #{new_resource.table} --delete-chain #{TEST_CHAIN_NAME}")
+    flush_test_chain
     shell_out! "iptables --table #{new_resource.table} --new-chain #{TEST_CHAIN_NAME}"
     begin
         new_resource.rules.each do |rule|
             test_rule = rule.gsub("-A #{new_resource.chain}", "-A #{TEST_CHAIN_NAME}")
-            shell_out!("iptables --table #{new_resource.table} #{test_rule}")
+            shell_out! "iptables --table #{new_resource.table} #{test_rule}"
         end
     ensure
-        shell_out("iptables --table #{new_resource.table} --flush #{TEST_CHAIN_NAME}")
-        shell_out("iptables --table #{new_resource.table} --delete-chain #{TEST_CHAIN_NAME}")
+        flush_test_chain
     end
+end
+
+def flush_test_chain
+    shell_out "iptables --table #{new_resource.table} --flush #{TEST_CHAIN_NAME}"
+    shell_out "iptables --table #{new_resource.table} --delete-chain #{TEST_CHAIN_NAME}"
 end

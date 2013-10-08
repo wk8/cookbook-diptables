@@ -135,6 +135,9 @@ Same as the `diptables_rules` resource, it defaults to the 'filter' table and th
 Changes
 =======
 
+* 0.1.3 (Oct 8, 2013)
+    * Forcing the flush of the test chain, fixing a possible bug when a previous Chef-client run has been killed half-way through
+
 * 0.1.2 (Sep 23, 2013)
     * Forcing the iptables reload action when disabling the `dry_run` mode
     * Fixing possible name collision
@@ -144,4 +147,3 @@ Changes
 
 * 0.1.0 (Sep 11, 2013)
     * Initial release
-
