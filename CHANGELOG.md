@@ -2,6 +2,10 @@
 
 This file is used to list changes made in each version of iptables.
 
+## 0.1.4:
+
+* Sorting the query's results to avoid reloading iptables unnecessarily
+
 ## 0.1.3:
 
 * Forcing the flush of the test chain, fixing a possible bug when a previous Chef-client run has been killed half-way through

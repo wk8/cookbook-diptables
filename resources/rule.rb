@@ -26,7 +26,8 @@ def rules
         Chef::Search::Query.new.search(:node, query) { |n| nodes << n }
         Chef::Log.warn("No result for the query #{query}") if nodes.empty?
         Chef::Log.debug("Query results: #{nodes.inspect}")
-        nodes.each do |n|
+        # sort by name to avoid reloading iptables when the search doesn't return nodes in the same order
+        nodes.sort{|a, b| a.name <=> b.name}.each do |n|
             # compute the placeholders' hash for that node
             node_placeholders = Hash[placeholders.map{ |placeholder, method| [placeholder, n.send(method)] } ]
             # add one rule per node, per rule template

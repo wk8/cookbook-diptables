@@ -131,9 +131,17 @@ It defines a default action for a given iptables chain. This is usually used to 
 
 Same as the `diptables_rules` resource, it defaults to the 'filter' table and the 'INPUT' chain, but you can redefine the `table` and `chain` attributes to whatever you want.
 
+Contributing & Feedback
+=======================
+
+As always, I appreciate bug reports, suggestions, pull requests, feedback...
+Feel free to reach me at <wk8.github@gmail.com>
 
 Changes
 =======
+
+* 0.1.4 (Nov 6, 2013)
+    * Sorting the query's results to avoid reloading iptables unnecessarily
 
 * 0.1.3 (Oct 8, 2013)
     * Forcing the flush of the test chain, fixing a possible bug when a previous Chef-client run has been killed half-way through
