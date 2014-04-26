@@ -4,9 +4,17 @@ class Chef::Node
         @iptables_config
     end
 
-    # kills the chef run if the iptables cookbook is NOT scheduled to run AFTER the one specified
-    # (in which case the new rules wouldn't be enforced!)
-    def ensure_iptables_will_run_after current_cookbook
-        Chef::Application.fatal!("The iptables resources declared in #{current_cookbook} can't be enforced since diptables doesn't run afterwards!") unless recipes.slice(recipes.index(current_cookbook), recipes.length).include?('diptables')
+    # we need the diptables::default recipe to be run after all the diptables LWRPs have been defined
+    # otherwise the rules added after won't be enforced
+    # so this a flag to ensure that
+    # see also the chef_handler_diptables.rb and diptables_handler_definer.rb files
+    def diptables_has_run new_state = nil
+        node.run_state[:diptables_has_run] = new_state unless new_state.nil?
+        node.run_state[:diptables_has_run]
+    end
+
+    def diptables_handler_defined new_state = nil
+        node.run_state[:diptables_handler_defined] = new_state unless new_state.nil?
+        node.run_state[:diptables_handler_defined]
     end
 end

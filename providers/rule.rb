@@ -1,9 +1,11 @@
 require 'chef/mixin/shell_out'
 include Chef::Mixin::ShellOut
 
+include DiptablesHandlerDefiner
+
 action :add do
     Chef::Log.debug("Adding rule to #{new_resource.table} : #{new_resource.chain} (#{new_resource.rule})")
-    node.ensure_iptables_will_run_after cookbook_name
+    define_diptables_handler
 
     # test the new rules make sense
     test_rules

@@ -7,12 +7,10 @@ Largely inspired by Dan Crosta's `simple-iptables` cookbook (https://github.com/
 
 Also, it makes it possible to make rules that apply to the result of a Chef! search query, which allows for rules such as "allow all my servers tagged Apache to access the current server on that port and that protocol".
 
-
 Requirements
 ============
 
 None, other than a system that supports iptables.
-
 
 Platforms
 =========
@@ -27,6 +25,11 @@ Other platforms that support `iptables` and the `iptables-restore` script
 are likely to work as well; if you use one, please let me know so that I can
 update the supported platforms list.
 
+Installation
+============
+
+Usual stuff:
+`knife cookbook site install diptables`
 
 Attributes
 ==========
@@ -41,7 +44,7 @@ Usage
 
 This cookbook defines three LWRPS: `diptables_rule`, `diptables_tcp_udp_rule` and `diptables_policy`, that you can use in your recipes, after telling Chef! that your cookbook depends on this one (just put `depends 'diptables'` in your `metadata.rb` file).
 
-Please note that you need to include the `recipe[diptables]` in your run list *AFTER* the recipe(s) using these resources to actually commit your changes (will crash anyway otherwise).
+Please note that you need to include the `recipe[diptables]` in your run list *AFTER* the recipe(s) using these resources to actually commit your changes (you'll get an error-level log at the end of the run otherwise, and your rules won't get enforced).
 
 `diptables_rule` Resource
 -------------------------
@@ -131,6 +134,16 @@ It defines a default action for a given iptables chain. This is usually used to 
 
 Same as the `diptables_rules` resource, it defaults to the 'filter' table and the 'INPUT' chain, but you can redefine the `table` and `chain` attributes to whatever you want.
 
+Example recipe
+==============
+
+You can have a look at the `diptables::example` recipe for examples on how to use the LWRPs.
+
+Chef-Solo
+=========
+
+As of version 0.1.5, you can use this cookbook's LWRPs with the `query` attribute as long as you have the [`chef-solo-search` cookbook (by edelight)](https://github.com/edelight/chef-solo-search) installed.
+
 Contributing & Feedback
 =======================
 
@@ -139,6 +152,10 @@ Feel free to reach me at <wk8.github@gmail.com>
 
 Changes
 =======
+
+* 0.1.5 (Apr 26, 2014)
+    * Enabling the use of the search queries with Chef-Solo if the `chef-solo-search` cookbook is installed
+    * Enforcing that the default recipe runs after LWRPs have been defined in a smoother way
 
 * 0.1.4 (Nov 6, 2013)
     * Sorting the query's results to avoid reloading iptables unnecessarily

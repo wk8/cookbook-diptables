@@ -2,6 +2,11 @@
 
 This file is used to list changes made in each version of iptables.
 
+## 0.1.5:
+
+* Enabling the use of the search queries with Chef-Solo if the `chef-solo-search` cookbook is installed
+* Enforcing that the default recipe runs after LWRPs have been defined in a smoother way
+
 ## 0.1.4:
 
 * Sorting the query's results to avoid reloading iptables unnecessarily

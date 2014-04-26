@@ -21,9 +21,11 @@ def rules
     if query
         @query = "(#{query}) AND chef_environment:#{node.chef_environment}" if same_environment
         Chef::Log.debug("Running query: #{query}, will be applied to rule #{rule} and with placeholders #{placeholders}")
-        nodes = []
         @rules = []
-        Chef::Search::Query.new.search(:node, query) { |n| nodes << n }
+        if Chef::Config[:solo] && !chef_solo_search_installed?
+            Chef::Application.fatal! 'This recipe uses search. Chef Solo does not support search unless you install the chef-solo-search cookbook.'
+        end
+        nodes = search(:node, query)
         Chef::Log.warn("No result for the query #{query}") if nodes.empty?
         Chef::Log.debug("Query results: #{nodes.inspect}")
         # sort by name to avoid reloading iptables when the search doesn't return nodes in the same order
@@ -51,6 +53,13 @@ def comment *args
 end
 
 private
+
+# shamelessly copied from https://github.com/sethvargo-cookbooks/users
+def chef_solo_search_installed?
+    ::Search::const_get('Helper').is_a?(Class)
+rescue NameError
+    false
+end
 
 def string_rule rule_value
     j = jump ? " --jump #{jump}" : ''

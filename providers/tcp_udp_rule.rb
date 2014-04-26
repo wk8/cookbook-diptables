@@ -1,3 +1,5 @@
+# This LWRP is actually just a convenient alias for the rule one
+
 action :add do
     diptables_rule new_resource.name do
         table new_resource.table
