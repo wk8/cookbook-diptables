@@ -139,6 +139,15 @@ Example recipe
 
 You can have a look at the `diptables::example` recipe for examples on how to use the LWRPs.
 
+You can also test my cookbook with Vagrant (see the 'Vagrant' section below).
+
+Vagrant
+=======
+
+You can test this cookbook locally, provided you have a bunch of free software installed, namely [Vagrant](https://www.vagrantup.com/downloads), [Berkshelf](http://berkshelf.com/), [VirtualBox](https://www.virtualbox.org/), and a couple of Vagrant plugins: [Vagrant-Berkshelf](https://github.com/berkshelf/vagrant-berkshelf) and [Vagrant-Omnibus](https://github.com/schisamo/vagrant-omnibus).
+
+Then playing with this cookbook should be as easy as running `bundle install && vagrant up`!
+
 Chef-Solo
 =========
 
@@ -152,6 +161,9 @@ Feel free to reach me at <wk8.github@gmail.com>
 
 Changes
 =======
+
+* 0.1.6 (May 6, 2014)
+    * Included Vagrant & Berkshelf for easier development
 
 * 0.1.5 (Apr 26, 2014)
     * Enabling the use of the search queries with Chef-Solo if the `chef-solo-search` cookbook is installed

@@ -2,6 +2,10 @@
 
 This file is used to list changes made in each version of iptables.
 
+## 0.1.6:
+
+* Included Vagrant & Berkshelf for easier development
+
 ## 0.1.5:
 
 * Enabling the use of the search queries with Chef-Solo if the `chef-solo-search` cookbook is installed
@@ -26,4 +30,4 @@ This file is used to list changes made in each version of iptables.
 
 ## 0.1.0:
 
-* Initial release of iptables
+* Initial release of diptables
