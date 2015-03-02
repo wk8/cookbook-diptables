@@ -89,7 +89,7 @@ Finally, a word on the `comment` attribute. Its default value, `true`, will simp
 `diptables_tcp_udp_rule` Resource
 ---------------------------------
 
-That resource is essentially an alias for `diptables_rule` resources to create rules for TCP or UDP connections. It defines the following self-explanatory attributes:
+That resource is essentially a wrapper on top of the `diptables_rule` one to create rules for TCP or UDP connections. It defines the following self-explanatory attributes:
 
 
 * table (default: 'filter')
@@ -119,6 +119,32 @@ The example below shows a fairly complex rule:
         same_environment true
         dport [9200, '9300:9400']
     end
+
+`diptables_bpf_rule` Resource
+-----------------------------
+
+Another wrapper on top of `diptables_rule`; that one allows to create BPF rules using the same syntax as for `tcpdump` filters.
+
+For example, to drop all IPv6 traffic:
+
+    diptables_bpf_rule 'drop all IPv6 traffic' do
+        tcpdump_rule 'ip6'
+        jump 'DROP'
+    end
+
+A more sophisticated example, that accepts all IP packets where the source and destination IP do not belong to the same `/16` network on `tun0`:
+
+    diptables_bpf_rule 'accept only traffic on the same /16 network' do
+        tcpdump_rule 'ip and ip[12:4] & 0xFFFF0000 = ip[16:4] & 0xFFFF0000'
+        # WARNING: this interface is only used to generate the bytecode, not for the
+        # actual iptables rule!
+        interface 'tun0'
+        additional_rule '-i tun0'
+    end
+
+Of course assumes you have the `bpf` iptables module installed. You also need to have `tcpdump` around.
+
+More docs and example at https://github.com/cloudflare/bpftools
 
 `diptables_policy` Resource
 ---------------------------
@@ -161,6 +187,9 @@ Feel free to reach me at <wk8.github@gmail.com>
 
 Changes
 =======
+
+* 0.2.0 (Mar 1, 2015)
+    * Added the `diptables_bpf_rule` resource
 
 * 0.1.6 (May 6, 2014)
     * Included Vagrant & Berkshelf for easier development

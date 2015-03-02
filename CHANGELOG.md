@@ -1,6 +1,9 @@
 # CHANGELOG for diptables
 
-This file is used to list changes made in each version of iptables.
+This file is used to list changes made in each version of diptables.
+
+## 0.2.0:
+* Added the `diptables_bpf_rule` resource
 
 ## 0.1.6:
 
