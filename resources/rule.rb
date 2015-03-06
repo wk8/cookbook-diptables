@@ -31,7 +31,7 @@ def rules
         # sort by name to avoid reloading iptables when the search doesn't return nodes in the same order
         nodes.sort{|a, b| a.name <=> b.name}.each do |n|
             # compute the placeholders' hash for that node
-            node_placeholders = Hash[placeholders.map{ |placeholder, method| [placeholder, n.send(method)] } ]
+            node_placeholders = Hash[placeholders.map{ |placeholder, method| [placeholder, method.split('.').inject(n, :send)] } ]
             # add one rule per node, per rule template
             rule.each do |r|
                 @rules << sprintf(r, node_placeholders)
