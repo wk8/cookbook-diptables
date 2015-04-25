@@ -1,62 +1,73 @@
-Description
-===========
+Diptables cookbook
+==================
 
-Chef! cookbook with LWRPs for managing iptables rules and policies.
-
-Largely inspired by Dan Crosta's `simple-iptables` cookbook (https://github.com/dcrosta/cookbook-simple-iptables), but with a slightly different approach: we rebuild the whole iptables config file from scratch every time this cookbook is run. That allows to automatically remove obsolete rules (rather than manually with Dan's cookbook).
-
-Also, it makes it possible to make rules that apply to the result of a Chef! search query, which allows for rules such as "allow all my servers tagged Apache to access the current server on that port and that protocol".
-
-Requirements
-============
-
-None, other than a system that supports iptables.
-
-Platforms
-=========
-
-The following platforms are supported and known to work:
-
-* Debian (6.0 and later)
-* RedHat (5.8 and later)
-* CentOS (5.8 and later)
-
-Other platforms that support `iptables` and the `iptables-restore` script
-are likely to work as well; if you use one, please let me know so that I can
-update the supported platforms list.
-
-Installation
-============
-
-Usual stuff:
-`knife cookbook site install diptables`
-
-Attributes
-==========
-
-This cookbook uses two attributes, both of which are optional:
-
-* `['diptables']['rules_path']` defines the path to which we should save the current iptables rules set. It defaults to sensible locations depending on your distribution.
-* `['diptables']['dry_run']` set that attribute to `true` to generate the new iptables rules set, but without actually loading it. This allows you to easily test your rules, and check what iptables configuration they would result in, without actually applying them yet. (Obviously defaults to `false`).
+A Chef cookbook with to manage iptables rules and policies.
 
 Usage
 =====
 
-This cookbook defines three LWRPS: `diptables_rule`, `diptables_tcp_udp_rule` and `diptables_policy`, that you can use in your recipes, after telling Chef! that your cookbook depends on this one (just put `depends 'diptables'` in your `metadata.rb` file).
+This cookbook rebuilds the entire set of rules at every Chef-client run, thus
+making it trivial to keep the iptables configuration up-to-date.
 
-Please note that you need to include the `recipe[diptables]` in your run list *AFTER* the recipe(s) using these resources to actually commit your changes (you'll get an error-level log at the end of the run otherwise, and your rules won't get enforced).
+It also makes it easy to create iptables rules using Chef search queries. For
+example, you can very simply create a rule telling your database server to let
+all your backend servers connect to it.
 
-`diptables_rule` Resource
--------------------------
+You simply need to create all the rules and policies using the resources
+provided by this cookbook (see below), and then apply them using with a
+`diptables_apply` resource or alternatively by including `diptables::default`.
+Note that if you do not do either of these things, this cookbook defines a
+handler that will apply the rules for you at the end of the run (but that's not
+recommended, as you won't benefit from your reporting handlers if there's an
+error applying rules that way).
 
-In its simpler form, that resource defines a single iptables rule, composed of a rule string (passed as-is to iptables), a table name, a chain name, and a jump target. All the attributes are optional, and respectively to '' (empty string), 'filter', 'INPUT', and 'ACCEPT'. For instance:
+Requirements
+============
 
-    # Allow SSH
+This cookbook is fully tested on Ubuntu 12.04, 14.04, CentOS 6.5, and Chef 11
+and 12.
+
+It should work on any platform that supports `iptables` though.
+
+Resources
+=========
+
+***diptables_rule***
+
+The most generic resource to define rules. If you want to apply TCP or UDP
+rules, you might want to have a look at `diptables_tcp_udp_rule` below that
+brings so syntactic sugar on top of this `diptables_rule`.
+
+Actions:
+
+| Action | Description |
+|--------|-------------|
+| `:append` | (_default_) Appends the rule after the other rules already   defined in its chain |
+| `:prepend` | Prepends the rule the front of its chain |
+| `:insert` | Inserts the rule in its chain at the position given by the `index` attribute (see below) |
+| `:add` | (_deprecated_) An alis for `:append` |
+
+Attributes:
+
+| Attribute | Type | Default | Description |
+|-----------|------|---------|-------------|
+| `table` | `String` | `'filter'` | The rule's table |
+| `chain` | `String` | `'INPUT` | The rule's chain |
+| `rule` | `String | Array` | `''` | The rule itself; if it's an array, it will create one `iptables` rule for each item in the array |
+| `jump` | `String | FalseClass` | `ACCEPT` | What to do with the matching packets; can be `false` to omit that part from the generated rule |
+| `comment` | `String | TrueClass | FalseClass` | `true` | A comment for that rule (will appear in the files containing the generated rules); `false` disables this feature, `true` takes the resource's name as comment |
+| `query` | `String | FalseClass` | `false` | A query to fetch `Chef::Node` objects used to generate the rule (see `placeholders` below) |
+| `placeholders` | `Hash` | `{}` | When using the `query` attribute, this defines how to replace placeholders from the `rule`; it should map each placeholder's name to a method name or an attribute path (given as arrrays) used to retrieve the corresponding values from the `Chef::Node` objects returned by the query |
+| `same_environment` | `TrueClass | FalseClass` | `false` | Restricts the `query` to return only nodes from the same Chef environment |
+| `index` | `Fixnum` | `-1` | The rule's index in its chain (only makes sense with the `:insert` action) |
+
+A few examples (note that all these would be simpler with `diptables_tcp_udp_rule` resources instead):
+
+    # Disallow SSH
     diptables_rule 'ssh' do
       rule '--proto tcp --dport 22'
+      jump 'REJECT'
     end
-
-For convenience, you may also specify an array of rule strings in a single LWRP invocation:
 
     # Allow HTTP, HTTPS
     diptables_rule 'http' do
@@ -64,75 +75,88 @@ For convenience, you may also specify an array of rule strings in a single LWRP 
              '--proto tcp --dport 443' ]
     end
 
-The same resource allows you to apply a given rule to every server matching a given Chef! search query. For instance, that rule would allow all your servers with the `backend-server` role to access the current server on the port 3306 (typical for a MySQL server):
-
-    # Allow backend servers to connect to MySQL
-    diptables_rule 'mysql' do
+    # Allow backend servers to connect to MySQL (using a node method)
+    diptables_rule 'mysql with node method' do
       rule '-s %<remote_ip>s --proto tcp --dport 3306'
       query 'roles:backend-server'
       placeholders({:remote_ip => 'ipaddress'})
     end
 
-This example will run the `roles:backend-server` query in the Chef! search, then create one rule per matching node on the current server, replacing the `%<remote_ip>s` placeholder by whatever is returned by the `ipaddress` method on the matching nodes. So if you have two servers with the `backend-server` role in your system, with IP addresses 1.2.3.4 and 1.2.3.5, the resource above will result in two rules in your iptables config file:
+And the same as the above, but using node attributes instead (assuming
+`node['my_company']['network']['internal_ip']` is defined):
 
-    -A INPUT -s 1.2.3.4 --proto tcp --dport --jump ACCEPT
-    -A INPUT -s 1.2.3.5 --proto tcp --dport --jump ACCEPT
+    # Allow backend servers to connect to MySQL (using an attribute path)
+    diptables_rule 'mysql with attribute path' do
+      rule '-s %<remote_ip>s --proto tcp --dport 3306'
+      query 'roles:backend-server'
+      placeholders({:remote_ip => ['my_company', 'network', 'internal_ip]})
+    end
 
-And the best thing is, if you add a third server with the same role, it will automatically add the relevant line to your iptables config.
+***diptables_tcp_udp_rule***
 
-Together with the `query` attribute, you can set the `same_environment` to `true` to retrieve only the nodes with the same Chef! environment as the current server.
+Essentially a wrapper with some syntactic sugar on top of `diptables_rule`.
 
-Please note that the syntax for the placeholders is the same as for Ruby's `sprintf` function (see http://www.ruby-doc.org/core-2.0.0/Kernel.html#method-i-format).
+Same actions as `diptables_rule`.
 
-Finally, a word on the `comment` attribute. Its default value, `true`, will simply use the name of the rule to comment it in the resulting rules file. Set it to `false` to not output any comment for the current rule, or simply set it to whatever `String` you want to be displayed as comment.
+Attributes:
 
-`diptables_tcp_udp_rule` Resource
----------------------------------
+| Attribute | Type | Default | Description |
+|-----------|------|---------|-------------|
+| `table` | `String` | `'filter'` | The rule's table |
+| `chain` | `String` | `'INPUT`   | The rule's chain |
+| `jump` | `String | FalseClass` | `ACCEPT` | What to do with the matching packets; can be `false` to omit that part from the generated rule |
+| `proto` | `'tcp' | 'udp'` | `'tcp'` | The protocol |
+| `interface` | `String | FalseClass` | `false` | The interface |
+| `dport` | `Fixnum | String | Array | FalseClass` | `false` | The destination port(s); can be a `String` to specify a range - e.g `'9300:9400'`, or an `Array` of `String`s and `Fixnum`s - e.g. `[80, 443, '9200:9400']` - in which case it uses the `multiport` iptables module |
+| `source` | `String | Array | FalseClass` | `false` | One or more source IP(s) (cannot be used together with `source_query` below) |
+| `source_query` | `String | FalseClass` | `false` | A query to fetch the source nodes for that rule |
+| `source_method` | `String | Array` | `'ipaddress'` | A method or attribute path to retrieve the IP address of source nodes |
+| `comment` | `String | TrueClass | FalseClass` | `true` | A comment for that rule (will appear in the files containing the generated rules); `false` disables this feature, `true` takes the resource's name as comment |
+| `same_environment` | `TrueClass | FalseClass` | `false` | Restricts the `query` to return only nodes from the same Chef environment |
+| `index` | `Fixnum` | `-1` | The rule's index in its chain (only makes sense with the `:insert` action) |
 
-That resource is essentially a wrapper on top of the `diptables_rule` one to create rules for TCP or UDP connections. It defines the following self-explanatory attributes:
+The same examples as above, re-written using `diptables_tcp_udp_rule`s:
 
-
-* table (default: 'filter')
-* chain (default: 'INPUT')
-* proto (default: 'tcp')
-* jump (default: 'ACCEPT')
-* comment (default: true)
-* interface
-* dport (which can be either a Fixnum - e.g. 80 - a String - e.g '9300:9400' - or an Array of Strings and Fixnums - e.g. [80, 443, '9200:9400' - in which case it uses the `multiport` iptables module])
-* source (which can be either a string or an array of strings)
-
-For instance, the following is equivalent to the 'ssh' example above:
-
-    # Allow SSH
+    # Disallow SSH
     diptables_tcp_udp_rule 'ssh' do
       dport 22
+      jump 'REJECT'
     end
 
-It also supports the same querying system as the `diptables_rule` resources: just give a query in the `source_query` attribute. Optionally, you can specify what method to call on the resulting nodes to get their IP address (by default `ipaddress`) in the `source_method` attribute. Finally, the `same_environment` attribute works the same as for `diptables_rule` resources.
-The example below shows a fairly complex rule:
-
-    # Enable Elasticsearch servers to speak to each other
-    diptables_tcp_udp_rule 'es_internal' do
-        interface 'eth1'
-        source_query 'roles:es-server'
-        source_method 'internal_ipaddress'
-        same_environment true
-        dport [9200, '9300:9400']
+    # Allow HTTP, HTTPS
+    diptables_tcp_udp_rule 'http' do
+      dport [80, 443]
     end
 
-`diptables_bpf_rule` Resource
------------------------------
+    # Allow backend servers to connect to MySQL (using a node method)
+    diptables_tcp_udp_rule 'mysql with node method' do
+      dport 3306
+      source_query 'roles:backend-server'
+    end
 
-Another wrapper on top of `diptables_rule`; that one allows to create BPF rules using the same syntax as for `tcpdump` filters.
+    # Allow backend servers to connect to MySQL (using an attribute path)
+    diptables_tcp_udp_rule 'mysql with attribute path' do
+      dport 3306
+      query 'roles:backend-server'
+      source_method ['my_company', 'network', 'internal_ip]
+    end
 
-For example, to drop all IPv6 traffic:
+***diptables_bpf_rule***
 
+Another wrapper on top of `diptables_rule`; that one allows to create BPF ("Berkeley Packet Filter") rules
+using the same syntax as for `tcpdump` filters.
+
+This one is very specific, and you probably won't use it, so just a couple of
+examples here:
+
+    # drops all IPv6 traffic
     diptables_bpf_rule 'drop all IPv6 traffic' do
         tcpdump_rule 'ip6'
         jump 'DROP'
     end
 
-A more sophisticated example, that accepts all IP packets where the source and destination IP do not belong to the same `/16` network on `tun0`:
+A more sophisticated example, that accepts all IP packets where the source and
+destination IP do not belong to the same `/16` network on `tun0`:
 
     diptables_bpf_rule 'accept only traffic on the same /16 network' do
         tcpdump_rule 'ip and ip[12:4] & 0xFFFF0000 = ip[16:4] & 0xFFFF0000'
@@ -142,42 +166,45 @@ A more sophisticated example, that accepts all IP packets where the source and d
         additional_rule '-i tun0'
     end
 
-Of course assumes you have the `bpf` iptables module installed. You also need to have `tcpdump` around.
+Of course assumes you have the `bpf` iptables module installed. You also need
+to have `tcpdump` around.
 
 More docs and example at https://github.com/cloudflare/bpftools
 
-`diptables_policy` Resource
----------------------------
+***diptables_policy***
 
-That resource is very much the same as the `simple_iptables_policy` one from Dan Crosta's `simple-iptables` cookbook.
+Defines a policy (default action) for a given iptables chain.
 
-It defines a default action for a given iptables chain. This is usually used to switch from a default-accept policy to a default-reject policy. For instance:
+Actions:
 
-    # Reject packets other than those explicitly allowed
-    diptables_policy 'drop_by_default' do
-      policy 'DROP'
-    end
+| Action | Description |
+|--------|-------------|
+| `:add` | (_default_) Adds the policy |
 
-Same as the `diptables_rules` resource, it defaults to the 'filter' table and the 'INPUT' chain, but you can redefine the `table` and `chain` attributes to whatever you want.
+Attributes:
 
-Example recipe
-==============
+| Attribute | Type | Default | Description |
+|-----------|------|---------|-------------|
+| `table` | `String` | `'filter'` | The policy's table |
+| `chain` | `String` | `'INPUT` | The policy's chain |
+| `policy` | `'ACCEPT' | 'DROP'` | none (_required_) | The policy itself |
 
-You can have a look at the `diptables::example` recipe for examples on how to use the LWRPs.
+***diptables_apply***
 
-You can also test my cookbook with Vagrant (see the 'Vagrant' section below).
+| Action | Description |
+|--------|-------------|
+| `:apply` | (_default_) Applies the `iptables` configuration as defined so far |
 
-Vagrant
-=======
+Applies rules and policies defined so far. There *must* be *exactly one*
+`diptables_apply` resource in your Chef-client run, and it *must* be converged
+*after* all your rule and policy resources (if you have more than one, Chef
+will output an explicit warning).
 
-You can test this cookbook locally, provided you have a bunch of free software installed, namely [Vagrant](https://www.vagrantup.com/downloads), [Berkshelf](http://berkshelf.com/), [VirtualBox](https://www.virtualbox.org/), and a couple of Vagrant plugins: [Vagrant-Berkshelf](https://github.com/berkshelf/vagrant-berkshelf) and [Vagrant-Omnibus](https://github.com/schisamo/vagrant-omnibus).
-
-Then playing with this cookbook should be as easy as running `bundle install && vagrant up`!
-
-Chef-Solo
-=========
-
-As of version 0.1.5, you can use this cookbook's LWRPs with the `query` attribute as long as you have the [`chef-solo-search` cookbook (by edelight)](https://github.com/edelight/chef-solo-search) installed.
+Note that the `diptables::default` recipe defines such a resource. As mentioned
+above, if your Chef-client run ends with one or more rule or policy resources
+that haven't been applied yet, our custom Chef handler will create and converge
+a `diptables_apply` resource on the fly, but it is not recommended to rely on
+this behaviour.
 
 Contributing & Feedback
 =======================
@@ -185,8 +212,43 @@ Contributing & Feedback
 As always, I appreciate bug reports, suggestions, pull requests, feedback...
 Feel free to reach me at <wk8.github@gmail.com>
 
+Development & Testing
+=====================
+
+You can test this cookbook locally, provided you have a bunch of free software
+installed, namely [Vagrant](https://www.vagrantup.com/downloads),
+[Berkshelf](http://berkshelf.com/), [VirtualBox](https://www.virtualbox.org/),
+and a couple of Vagrant plugins:
+[Vagrant-Berkshelf](https://github.com/berkshelf/vagrant-berkshelf) and
+[Vagrant-Omnibus](https://github.com/schisamo/vagrant-omnibus).
+
+Then playing with this cookbook should be as easy as running `bundle install && vagrant up`!
+
+To run the full test suite across all supported platforms and Chef versions,
+you need to have [ChefDK](https://downloads.chef.io/chef-dk/) around, and run
+`kitchen test`.
+
+Chef-Solo
+=========
+
+As of version 0.1.5, you can use this cookbook's resources' query abilities as
+long as you have the [`chef-solo-search` cookbook (by
+edelight)](https://github.com/edelight/chef-solo-search) installed.
+
+Please note though that the `chef-solo-search` cookbook is deprecated, and you
+should really consider starting using `chef-zero` instead [as suggested by
+`chef-solo-search`'s author
+himself.](https://www.chef.io/blog/2014/06/24/from-solo-to-zero-migrating-to-che
+f-client-local-mode/)
+
 Changes
 =======
+
+* 1.0.0 (Apr 24, 2015)
+    * Added full support for CentOS 6.5
+    * Added `rspec` tests
+    * Added Test-Kitchen tests for all supported platforms and Chef versions
+    * Migrated the applying logic to the `diptables_apply` resource
 
 * 0.2.0 (Mar 1, 2015)
     * Added the `diptables_bpf_rule` resource

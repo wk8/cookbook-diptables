@@ -1,0 +1,55 @@
+<%
+REPO_ROOT = File.expand_path '..', __FILE__
+
+# a helper function to parse a .gitignore file into a list of paths to exclude
+# from the sync
+def parse_gitignore_to_list file_directory
+    lines = File.read(File.join(file_directory, '.gitignore')).split("\n")
+    # strip comments, empty lines, and lines starting with a bang
+    # (there's no way to translate gitignore bangs into an rsync exclude param)
+    lines.reject! { |line| line.match /^\s*(?:[!#]|$)/ }
+    # and strip leading slashes as they don't mean the same to the sync and to
+    # git
+    lines.map { |line| line.gsub /^\/+/, '' }
+end
+%>
+---
+
+driver:
+  name: vagrant
+
+provisioner:
+  name: chef_solo
+
+platforms:
+<%
+%w{ubuntu-12.04 ubuntu-14.04 centos-6.5}.each do |os|
+  %w{11 12}.each do |chef_version|
+%>
+  - name: <%= os %>-chef-<%= chef_version %>
+    provisioner:
+      require_chef_omnibus: <%= chef_version %>
+    driver:
+      box: <%= os %>
+      box_url: 'https://opscode-vm-bento.s3.amazonaws.com/vagrant/virtualbox/opscode_<%= os %>_chef-provisionerless.box'
+<%
+  end
+end %>
+
+suites:
+  - name: diptables
+    driver:
+      synced_folders:
+        - ['<%= REPO_ROOT %>', '/root/diptables', 'type: "rsync", rsync__exclude: <%= parse_gitignore_to_list REPO_ROOT %>']
+    run_list:
+      # install chefDK, needed to run tests
+      - 'chef-dk'
+      - 'diptables_tests::chef_dk_profile'
+      # run the chefspec suites
+      - 'diptables_tests::run_rspec'
+      # last but not least, run the full example that will get checked by TK
+      # down the road
+      - 'diptables_tests::full_example'
+    attributes:
+      diptables_tests:
+        cookbook_root: '/root/diptables'

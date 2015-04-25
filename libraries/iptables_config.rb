@@ -1,62 +1,58 @@
-class IPTablesChain
-    attr_reader :name
-    attr_accessor :policy, :rules
+class DiptablesCookbook
+  class IPTablesChain
+    attr_reader :name, :rules
+    attr_accessor :policy
 
     def initialize name
-        @name = name
-        # the "undefined" policy for iptables
-        @policy = '-'
-        @rules =  []
+      @name = name
+      # the "undefined" policy for iptables
+      @policy = '-'
+      @rules =  []
     end
 
-    def add_rule rule
-        @rules << rule
+    def insert_rule index, rule
+      @rules.insert(index, rule)
     end
+  end
 
-end
-
-class IPTablesTable
+  class IPTablesTable
     attr_reader :name
 
     def initialize name
-        @name = name
-        @chains = {}
+      @name = name
+      @chains = {}
     end
 
     def chains
-        @chains.values
+      @chains.values
     end
 
     def get_chain chain_name
-        @chains[chain_name] = IPTablesChain.new chain_name unless @chains.has_key? chain_name
-        @chains[chain_name]
+      @chains[chain_name] ||= IPTablesChain.new(chain_name)
     end
+  end
 
-end
-
-class IPTablesConfig
+  class IPTablesConfig
+    attr_accessor :applied
 
     def initialize
-        @tables = {}
+      @tables = {}
     end
 
-    def add_policy policy
-        get_table(policy.table).get_chain(policy.chain).policy = policy.policy
+    def set_policy policy
+      get_table(policy.table).get_chain(policy.chain).policy = policy.policy
     end
 
-    def add_rule rule
-        get_table(rule.table).get_chain(rule.chain).add_rule(rule)
+    def insert_rule index, rule
+      get_table(rule.table).get_chain(rule.chain).insert_rule(index, rule)
     end
 
     def tables
-        @tables.values
+      @tables.values
     end
-
-    private
 
     def get_table table_name
-        @tables[table_name] = IPTablesTable.new table_name unless @tables.has_key? table_name
-        @tables[table_name]
+      @tables[table_name] ||= IPTablesTable.new(table_name)
     end
-
+  end
 end

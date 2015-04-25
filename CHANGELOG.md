@@ -2,6 +2,12 @@
 
 This file is used to list changes made in each version of diptables.
 
+## 1.0.0:
+* Added full support for CentOS 6.5
+* Added `rspec` tests
+* Added Test-Kitchen tests for all supported platforms and Chef versions
+* Migrated the applying logic to the `diptables_apply` resource
+
 ## 0.2.0:
 * Added the `diptables_bpf_rule` resource
 
