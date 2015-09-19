@@ -10,6 +10,15 @@ end
 
 default['diptables']['dry_run'] = false
 
+# by default, diptables will only reload the rules from the file if said file
+# has been changed during the run. That's based on the assumption that Chef is
+# the only thing messing with iptables on your boxes, which should be the case.
+# However, if for whatever reason you wish to have Chef enforce the current set
+# of rules (as written in the file) every time it runs (and not only when the file
+# change, then you can set this to true). Simply please bear in mind that real-time
+# security enforcement is not what Chef was meant for and is good at...
+default['diptables']['force_reload'] = false
+
 # Can be used to have the diptables::default recipe create
 # rules and policies from node attributes
 # The preferred method should be to define resources in your own

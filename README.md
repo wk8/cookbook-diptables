@@ -244,6 +244,12 @@ f-client-local-mode/)
 Changes
 =======
 
+* 1.0.1 (Sep 19, 2015)
+    * Added the `['diptables']['force_reload']` attribute to explicitely
+      reload rules even when the rules file has not been modified -
+      not adding to the README as this is a smell in Chef use as far as I'm
+      concerned
+
 * 1.0.0 (Apr 24, 2015)
     * Added full support for CentOS 6.5
     * Added `rspec` tests

@@ -21,8 +21,10 @@ action :apply do
     execute 'diptables-reload-iptables' do
       command iptables_restore_command
       user 'root'
-      action :nothing
-      subscribes :run, 'template[diptables-rules-file]', :immediately
+      unless node['diptables']['force_reload']
+        action :nothing
+        subscribes :run, 'template[diptables-rules-file]', :immediately
+      end
     end
 
     # only mark as updated if the rules did change
