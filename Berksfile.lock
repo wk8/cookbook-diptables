@@ -12,7 +12,7 @@ GRAPH
     dmg (~> 2.2)
   chef-solo-search (0.5.1)
   chef_handler (1.1.6)
-  diptables (1.0.0)
+  diptables (1.0.1)
     chef_handler (>= 0.0.0)
   diptables_tests (0.1.0)
     diptables (>= 0.0.0)

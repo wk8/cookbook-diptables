@@ -29,4 +29,8 @@ Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
       'recipe[diptables_tests::full_example]'
     ]
   end
+
+  if Vagrant.has_plugin?('vagrant-gatling-rsync')
+    config.gatling.rsync_on_startup = false
+  end
 end

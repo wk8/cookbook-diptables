@@ -17,6 +17,8 @@ end
 
 driver:
   name: vagrant
+  vagrantfiles:
+    - Vagrantfile_kicthen_include.rb
 
 provisioner:
   name: chef_solo
