@@ -4,12 +4,12 @@ require 'chef/mixin/shell_out'
 
 
 class Chef::Resource::DiptablesBpfRule < Chef::Resource::DiptablesRule
-  self.resource_name = :diptables_bpf_rule
+  resource_name :diptables_bpf_rule
 
-  attribute :tcpdump_rule, :kind_of => [String, Array], :default => ''
+  attribute :tcpdump_rule, kind_of: [String, Array], default: ''
   # Only used to generate the bytecode, not in the actual rule!
-  attribute :interface, :kind_of => [String, FalseClass], :default => false
-  attribute :additional_rule, :kind_of => [String, Array], :default => ''
+  attribute :interface, kind_of: [String, FalseClass], default: false
+  attribute :additional_rule, kind_of: [String, Array], default: ''
 
   include Chef::Mixin::ShellOut
 
@@ -28,4 +28,5 @@ end
 
 
 class Chef::Provider::DiptablesBpfRule < Chef::Provider::DiptablesRule
+  provides :diptables_bpf_rule
 end

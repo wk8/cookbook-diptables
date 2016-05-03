@@ -6,7 +6,7 @@ class DiptablesCookbook
     # the rules at the end of a run
     def define_diptables_handler
       # do that only once
-      return if node.run_state[:diptables_handler_defined]
+      return if node.run_state['diptables_handler_defined']
 
       # first copy the handler file to the node
       directory node['chef_handler']['handler_path'] do
@@ -29,18 +29,18 @@ class DiptablesCookbook
       apply_resource = diptables_apply 'diptables_handler_apply_rules' do
         action :nothing
       end
-      node.run_state[:diptables_handler_defined] = true
-      node.run_state[:diptables_handler_apply_resource] = apply_resource
+      node.run_state['diptables_handler_defined'] = true
+      node.run_state['diptables_handler_apply_resource'] = apply_resource
     end
 
     # Should be called by all providers when updating the config
     # Returns the current DiptablesCookbook::IPTablesConfig object
     def updating_diptables_config
-      if node.run_state[:diptables_config_last_applied_by]
+      if node.run_state['diptables_config_last_applied_by']
         # if the config has already been applied during this run, warn this is
         # not a good thing to do, since a partially built config has been
         # applied...
-        apply_resource = node.run_state[:diptables_config_last_applied_by]
+        apply_resource = node.run_state['diptables_config_last_applied_by']
         error_msg = <<EOF
 Diptables has already applied a partially built iptables config during this
 Chef run!
@@ -64,8 +64,8 @@ EOF
         # also log to file, if any
         log error_msg do level :error end
       end
-      node.run_state[:diptables_config_applied] = false
-      node.run_state[:diptables_config] ||= DiptablesCookbook::IPTablesConfig.new
+      node.run_state['diptables_config_applied'] = false
+      node.run_state['diptables_config'] ||= DiptablesCookbook::IPTablesConfig.new
     end
   end
 end

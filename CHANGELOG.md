@@ -2,6 +2,16 @@
 
 This file is used to list changes made in each version of diptables.
 
+## 1.1.0:
+* Upgraded the syntax to Chef 12. Deprecated support for Chef 11
+* Upgraded the dev environment
+
+## 1.0.1:
+* Added the `['diptables']['force_reload']` attribute to explicitely
+  reload rules even when the rules file has not been modified -
+  not adding to the README as this is a smell in Chef use as far as I'm
+  concerned
+
 ## 1.0.0:
 * Added full support for CentOS 6.5
 * Added `rspec` tests

@@ -1,5 +1,5 @@
 class Chef::Resource::DiptablesTcpUdpRule < Chef::Resource::DiptablesRule
-  self.resource_name = :diptables_tcp_udp_rule
+  resource_name :diptables_tcp_udp_rule
 
   attribute :proto, :equal_to => ['tcp', 'udp'], :default => 'tcp'
   attribute :interface, :kind_of => [String, FalseClass], :default => false
@@ -29,7 +29,7 @@ class Chef::Resource::DiptablesTcpUdpRule < Chef::Resource::DiptablesRule
     super
   end
 
-  private
+private
 
   SOURCE_PLACEHOLDER = :_diptables_tcp_udp_source_placeholder_
 
@@ -66,4 +66,5 @@ end
 
 
 class Chef::Provider::DiptablesTcpUdpRule < Chef::Provider::DiptablesRule
+  provides :diptables_tcp_udp_rule
 end

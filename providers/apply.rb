@@ -58,8 +58,8 @@ action :apply do
 
   ruby_block 'diptables_config_applied' do
     block do
-      node.run_state[:diptables_config_applied] = true
-      node.run_state[:diptables_config_last_applied_by] = new_resource
+      node.run_state['diptables_config_applied'] = true
+      node.run_state['diptables_config_last_applied_by'] = new_resource
     end
   end
 end
