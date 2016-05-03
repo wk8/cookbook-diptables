@@ -7,7 +7,7 @@ Vagrant.require_version '>= 1.5.0'
 
 Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
   config.vm.hostname = 'diptables-vagrant'
-  config.omnibus.chef_version = '12.0.1'
+  config.omnibus.chef_version = '12.9.38'
   config.vm.box = 'wk8/ubuntu-14.04'
 
   config.berkshelf.enabled = true
