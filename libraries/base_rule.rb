@@ -11,26 +11,26 @@ require ::File.join(::File.dirname(__FILE__), 'provider_mixin')
 
 
 class Chef::Resource::DiptablesRule < Chef::Resource::LWRPBase
-  self.resource_name = :diptables_rule
+  resource_name :diptables_rule
 
   actions :prepend, :append, :insert, :add
   default_action :append
 
-  attribute :table, :kind_of => String, :default => 'filter'
-  attribute :chain, :kind_of => String, :default => 'INPUT'
-  attribute :rule, :kind_of => [String, Array], :default => ''
-  attribute :jump, :kind_of => [String, FalseClass], :default => 'ACCEPT'
-  attribute :comment, :kind_of => [TrueClass, FalseClass, String], :default => true
+  attribute :table, kind_of: String, default: 'filter'
+  attribute :chain, kind_of: String, default: 'INPUT'
+  attribute :rule, kind_of: [String, Array], default: ''
+  attribute :jump, kind_of: [String, FalseClass], default: 'ACCEPT'
+  attribute :comment, kind_of: [TrueClass, FalseClass, String], default: lazy { |r| r.name }
   # the query to be run to get the nodes towards which this rule will apply
-  attribute :query, :kind_of => [String, FalseClass], :default => false
+  attribute :query, kind_of: [String, FalseClass], default: false
   # the placeholders inside the rule string (must be named placeholders, see http://www.ruby-doc.org/core-2.0.0/Kernel.html#method-i-format)
   # mapping the placeholders name to the method's name to be run on the resulting
   # node objects to retrieve the value to place there
   # Note that these can also be attribute paths, entered as arrays
-  attribute :placeholders, :kind_of => Hash, :default => {}
+  attribute :placeholders, kind_of: Hash, default: {}
   # if true, then will force the same Chef environment in the query
-  attribute :same_environment, :kind_of => [TrueClass, FalseClass], :default => false
-  attribute :index, :kind_of => Fixnum, :default => -1
+  attribute :same_environment, kind_of: [TrueClass, FalseClass], default: false
+  attribute :index, kind_of: Fixnum, default: -1
 
   attr_accessor :computed_rules
 
@@ -49,17 +49,7 @@ class Chef::Resource::DiptablesRule < Chef::Resource::LWRPBase
     end
   end
 
-  # we default to the name of the rule if no comment has been given, but
-  # comments haven't been disabled either
-  # not the cleanest way to do that, but older Chef versions do not support
-  # the `default: lazy { |r| r.name }` syntax...
-  alias_method :vanilla_comment, :comment
-  def comment *args
-    @comment = name if @comment == true
-    vanilla_comment *args
-  end
-
-  private
+private
 
   # shamelessly copied from
   # https://github.com/opscode-cookbooks/users/blob/v1.7.0/providers/manage.rb#L32
@@ -74,6 +64,8 @@ end
 class Chef::Provider::DiptablesRule < Chef::Provider::LWRPBase
   include Chef::Mixin::ShellOut
   include DiptablesCookbook::ProviderMixin
+
+  provides :diptables_rule
 
   use_inline_resources
 
@@ -90,7 +82,7 @@ class Chef::Provider::DiptablesRule < Chef::Provider::LWRPBase
     insert_rule new_resource.index
   end
 
-  private
+private
 
   def insert_rule index
     Chef::Log.debug("Inserting rule #{new_resource} in position #{index} to #{new_resource.table}:#{new_resource.chain} (#{new_resource.rule})")

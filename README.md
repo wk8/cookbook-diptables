@@ -3,6 +3,9 @@ Diptables cookbook
 
 A Chef cookbook with to manage iptables rules and policies.
 
+*_WARNING_: Chef 11 is no longer supported by this cookbook. Please use version
+1.0.1 if you still use Chef 11, or better yet, upgrade your Chef client!*
+
 Usage
 =====
 
@@ -24,8 +27,7 @@ error applying rules that way).
 Requirements
 ============
 
-This cookbook is fully tested on Ubuntu 12.04, 14.04, CentOS 6.5, and Chef 11
-and 12.
+This cookbook is fully tested on Ubuntu 12.04, 14.04, CentOS 6.5, and Chef 12.
 
 It should work on any platform that supports `iptables` though.
 
@@ -243,6 +245,10 @@ f-client-local-mode/)
 
 Changes
 =======
+
+* 1.1.0 (May 2nd, 2016):
+    * Upgraded the syntax to Chef 12. Deprecated support for Chef 11
+    * Upgraded the dev environment
 
 * 1.0.1 (Sep 19, 2015)
     * Added the `['diptables']['force_reload']` attribute to explicitely
