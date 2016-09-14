@@ -110,8 +110,8 @@ Attributes:
 | `proto` | `'tcp' | 'udp'` | `'tcp'` | The protocol |
 | `interface` | `String | FalseClass` | `false` | The interface |
 | `dport` | `Fixnum | String | Array | FalseClass` | `false` | The destination port(s); can be a `String` to specify a range - e.g `'9300:9400'`, or an `Array` of `String`s and `Fixnum`s - e.g. `[80, 443, '9200:9400']` - in which case it uses the `multiport` iptables module |
-| `source` | `String | Array | FalseClass` | `false` | One or more source IP(s) (cannot be used together with `source_query` below) |
-| `source_query` | `String | FalseClass` | `false` | A query to fetch the source nodes for that rule |
+| `source` | `String | Array | FalseClass` | `false` | One or more source IP(s) (if used together with `source_query` below, both will be concatenated) |
+| `source_query` | `String | FalseClass` | `false` | A query to fetch the source nodes for that rule (if used together with `source` below, both will be concatenated) |
 | `source_method` | `String | Array` | `'ipaddress'` | A method or attribute path to retrieve the IP address of source nodes |
 | `comment` | `String | TrueClass | FalseClass` | `true` | A comment for that rule (will appear in the files containing the generated rules); `false` disables this feature, `true` takes the resource's name as comment |
 | `same_environment` | `TrueClass | FalseClass` | `false` | Restricts the `query` to return only nodes from the same Chef environment |
@@ -245,6 +245,10 @@ f-client-local-mode/)
 
 Changes
 =======
+
+* 1.2.0 (Sep 14th, 2016):
+    * Allowed using `source` and `source_query` at the same time for TCP/UDP
+      rules
 
 * 1.1.0 (May 2nd, 2016):
     * Upgraded the syntax to Chef 12. Deprecated support for Chef 11

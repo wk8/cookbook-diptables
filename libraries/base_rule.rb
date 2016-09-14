@@ -113,10 +113,10 @@ private
 
   def build_chainless_string_rules
     raw_rules = if new_resource.rule.kind_of?(String)
-      [new_resource.rule]
-    else
-      new_resource.rule
-    end
+        [new_resource.rule]
+      else
+        new_resource.rule
+      end
 
     if new_resource.query
       raw_rules = replace_placeholders(raw_rules)
@@ -148,14 +148,14 @@ private
       raw_rules.inject(acc) do |acc2, raw_rule|
         acc2 << sprintf(raw_rule, node_placeholders(n))
       end
-    end
+    end.uniq
   end
 
   # Compute the placeholders' hash for a given node object
   def node_placeholders n
     Hash[new_resource.placeholders.map do |placeholder, method_or_attr_path|
       [placeholder.to_sym, node_placeholder(n, method_or_attr_path)]
-    end ]
+    end]
   end
 
   # Computes the value for a single placeholder for a given node nobject

@@ -36,12 +36,6 @@ describe 'diptables_tcp_udp_rule resource' do
       expected_content = "# White listed IPs\n-A INPUT --proto tcp -s 1.1.1.1 --jump ACCEPT\n-A INPUT --proto tcp -s 2.2.2.2 --jump ACCEPT\n\n"
       assert_converge_renders({'White listed IPs' => resource_data}, expected_content)
     end
-
-    it 'raises an exception if trying to use both query and query_source' do
-      resource_data = {source_query: 'roles:backend',
-                       source: '1.1.1.1'}
-      expect { converge_with_invalid_resource resource_data }.to raise_error(DiptablesCookbook::Exception::InvalidResourceAttrs)
-    end
   end
 
   context 'on a client run' do
@@ -57,6 +51,12 @@ describe 'diptables_tcp_udp_rule resource' do
     it 'can use the search' do
       expected_content = "# Backend servers to MySQL\n-A INPUT --proto tcp --dport 3306 -s 1.1.1.1 --jump ACCEPT\n-A INPUT --proto tcp --dport 3306 -s 1.1.1.2 --jump ACCEPT\n-A INPUT --proto tcp --dport 3306 -s 1.1.1.3 --jump ACCEPT\n\n"
       assert_converge_renders({'Backend servers to MySQL' => base_resource_data}, expected_content)
+    end
+
+    it 'concatenates query and query_source if passed both' do
+      with_source = base_resource_data.tap { |d| d[:source] = '99.99.99.0/24' }
+      expected_content = "# Backend servers to MySQL\n-A INPUT --proto tcp --dport 3306 -s 99.99.99.0/24 --jump ACCEPT\n-A INPUT --proto tcp --dport 3306 -s 1.1.1.1 --jump ACCEPT\n-A INPUT --proto tcp --dport 3306 -s 1.1.1.2 --jump ACCEPT\n-A INPUT --proto tcp --dport 3306 -s 1.1.1.3 --jump ACCEPT\n\n"
+      assert_converge_renders({'Backend servers to MySQL' => with_source}, expected_content)
     end
 
     it 'can limit the query to nodes in the same environment' do
