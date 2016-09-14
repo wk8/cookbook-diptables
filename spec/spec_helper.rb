@@ -59,7 +59,7 @@ module DiptablesRspecHelpers
     chef_run.create_node('prod-other-01', { automatic: {ipaddress: '1.1.1.4'} })
   end
 
-  private
+private
 
   def fetch_step_into
     step_into

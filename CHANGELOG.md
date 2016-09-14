@@ -2,6 +2,9 @@
 
 This file is used to list changes made in each version of diptables.
 
+## 1.2.0:
+* Allowed using `source` and `source_query` at the same time for TCP/UDP rules
+
 ## 1.1.0:
 * Upgraded the syntax to Chef 12. Deprecated support for Chef 11
 * Upgraded the dev environment

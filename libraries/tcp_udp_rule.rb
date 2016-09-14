@@ -20,15 +20,6 @@ class Chef::Resource::DiptablesTcpUdpRule < Chef::Resource::DiptablesRule
     source_query ? {SOURCE_PLACEHOLDER => source_method} : {}
   end
 
-  def validate_diptables_params
-    if source_query && source
-      error_msg = "You can't use both the 'source' and 'source_query' attributes with the DiptablesTcpUdpRule resource"
-      raise DiptablesCookbook::Exception::InvalidResourceAttrs.new(error_msg)
-    end
-
-    super
-  end
-
 private
 
   SOURCE_PLACEHOLDER = :_diptables_tcp_udp_source_placeholder_
@@ -37,6 +28,7 @@ private
     raw_rule = ""
     raw_rule += "-i #{interface}" if interface
     raw_rule += " --proto #{proto}"
+
     if dport
       if dport.kind_of? Array
         # multiport rule
@@ -46,21 +38,29 @@ private
         raw_rule += " --dport #{dport}"
       end
     end
+
+    rules = []
+
     if source
-      source_array = if source.kind_of? String
-        [source]
-      else
-        source
-      end
-      result = source_array.map{ |s| "#{raw_rule} -s #{s}" }
-    else
-      if source_query
-        raw_rule += " -s %<#{SOURCE_PLACEHOLDER}>s"
-      end
-      result = [raw_rule]
+      sources = if source.kind_of? String
+          [source]
+        else
+          source
+        end
+
+      rules += sources.map{ |s| "#{raw_rule} -s #{s}" }
     end
-    Chef::Log.debug("Rule built for #{self} : #{result}")
-    result
+
+    if source_query
+      rules << "#{raw_rule} -s %<#{SOURCE_PLACEHOLDER}>s"
+    end
+
+    if rules.empty?
+      rules << raw_rule
+    end
+
+    Chef::Log.debug("Rule built for #{self} : #{rules}")
+    rules
   end
 end
 
