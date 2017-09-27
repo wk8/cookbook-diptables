@@ -6,7 +6,7 @@ class Chef::Resource::DiptablesTcpUdpRule < Chef::Resource::DiptablesRule
   attribute :source, :kind_of => [String, Array, FalseClass], :default => false
   attribute :dport, :kind_of => [Fixnum, String, Array, FalseClass], :default => false
   attribute :source_query, :kind_of => [String, FalseClass], :default => false
-  attribute :source_method, :kind_of => [String, Array], :default => 'ipaddress' 
+  attribute :source_method, :kind_of => [String, Array], :default => ['ipaddress']
 
   def rule
     @rule ||= build_rule

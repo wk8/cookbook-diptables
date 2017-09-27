@@ -53,10 +53,18 @@ describe 'diptables_tcp_udp_rule resource' do
       assert_converge_renders({'Backend servers to MySQL' => base_resource_data}, expected_content)
     end
 
-    it 'concatenates query and query_source if passed both' do
-      with_source = base_resource_data.tap { |d| d[:source] = '99.99.99.0/24' }
-      expected_content = "# Backend servers to MySQL\n-A INPUT --proto tcp --dport 3306 -s 99.99.99.0/24 --jump ACCEPT\n-A INPUT --proto tcp --dport 3306 -s 1.1.1.1 --jump ACCEPT\n-A INPUT --proto tcp --dport 3306 -s 1.1.1.2 --jump ACCEPT\n-A INPUT --proto tcp --dport 3306 -s 1.1.1.3 --jump ACCEPT\n\n"
-      assert_converge_renders({'Backend servers to MySQL' => with_source}, expected_content)
+    context 'when passed both source and query_source' do
+      it 'concatenates both' do
+        with_source = base_resource_data.tap { |d| d[:source] = '99.99.99.0/24' }
+        expected_content = "# Backend servers to MySQL\n-A INPUT --proto tcp --dport 3306 -s 99.99.99.0/24 --jump ACCEPT\n-A INPUT --proto tcp --dport 3306 -s 1.1.1.1 --jump ACCEPT\n-A INPUT --proto tcp --dport 3306 -s 1.1.1.2 --jump ACCEPT\n-A INPUT --proto tcp --dport 3306 -s 1.1.1.3 --jump ACCEPT\n\n"
+        assert_converge_renders({'Backend servers to MySQL' => with_source}, expected_content)
+      end
+
+      it 'stills uses the source if there are no results from the query' do
+        with_source = base_resource_data.merge(source: '99.99.99.97/24', source_query: 'i:dont_exist')
+        expected_content = "# Backend servers to MySQL\n-A INPUT --proto tcp --dport 3306 -s 99.99.99.97/24 --jump ACCEPT\n\n"
+        assert_converge_renders({'Backend servers to MySQL' => with_source}, expected_content)
+      end
     end
 
     it 'can limit the query to nodes in the same environment' do

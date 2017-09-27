@@ -29,7 +29,7 @@ describe 'diptables_rule resource' do
     end
 
     it 'raises an exception if trying to use placeholders without a query' do
-      resource_data = {placeholders: {:remote_ip => 'ipaddress'}}
+      resource_data = {placeholders: {:remote_ip => 'ipaddress_method'}}
       expect { converge_with_invalid_resource resource_data }.to raise_error(DiptablesCookbook::Exception::InvalidResourceAttrs)
     end
 
@@ -105,7 +105,7 @@ describe 'diptables_rule resource' do
 
     let(:base_resource_data) {
       {query: 'role:backend',
-       placeholders: {:remote_ip => 'ipaddress'},
+       placeholders: {:remote_ip => 'ipaddress_method'},
        rule: '-s %<remote_ip>s --proto tcp --dport 3306'}
     }
 

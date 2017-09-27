@@ -26,7 +26,7 @@ provisioner:
 platforms:
 <%
 %w{ubuntu-12.04 ubuntu-14.04 centos-6.5}.each do |os|
-  %w{12}.each do |chef_version|
+  %w{12 13}.each do |chef_version|
 %>
   - name: <%= os %>-chef-<%= chef_version %>
     provisioner:

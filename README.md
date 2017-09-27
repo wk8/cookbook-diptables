@@ -246,6 +246,10 @@ f-client-local-mode/)
 Changes
 =======
 
+* 1.3.0 (Sep 27th, 2017):
+    * Fixing a small bug when using both `source` and `source_query` for UDP/TCP resources
+    * Added support for Chef 13, still backward compatible with Chef 12
+
 * 1.2.0 (Sep 14th, 2016):
     * Allowed using `source` and `source_query` at the same time for TCP/UDP
       rules

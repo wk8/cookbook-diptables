@@ -138,17 +138,31 @@ private
     # sort by name to avoid reloading iptables when the search doesn't return
     # nodes in the same order
     nodes = search(:node, query).sort {|a, b| a.name <=> b.name}
-    if nodes.empty?
-      Chef::Log.warn("No result for the query #{query}")
-    end
     Chef::Log.debug("Query results: #{nodes.inspect}")
 
-    # add one rule per node, per rule template
-    nodes.inject([]) do |acc, n|
+    # not all rule templates necessarily have placeholders
+    rules_without_placeholders = raw_rules.map do |raw_rule|
+      begin
+        sprintf(raw_rule, {})
+      rescue KeyError
+        nil
+      end
+    end
+
+    # then add one rule per node, per rule template
+    rules_with_placeholders = nodes.inject([]) do |acc, n|
       raw_rules.inject(acc) do |acc2, raw_rule|
         acc2 << sprintf(raw_rule, node_placeholders(n))
       end
-    end.uniq
+    end
+
+    all_rules = rules_without_placeholders + rules_with_placeholders
+    all_rules.compact!
+    all_rules.uniq!
+
+    Chef::Log.warn("No result for the query #{query}") unless all_rules.size > 0
+
+    all_rules
   end
 
   # Compute the placeholders' hash for a given node object
