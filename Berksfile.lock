@@ -8,12 +8,12 @@ DEPENDENCIES
     path: test/cookbooks/diptables_tests
 
 GRAPH
-  chef-dk (3.0.0)
+  chef-dk (3.1.0)
     dmg (~> 2.2)
   chef-solo-search (0.5.1)
-  chef_handler (1.1.6)
+  chef_handler (3.0.2)
   diptables (1.2.0)
     chef_handler (>= 0.0.0)
-  diptables_tests (0.1.0)
+  diptables_tests (0.1.1)
     diptables (>= 0.0.0)
-  dmg (2.2.2)
+  dmg (2.4.0)
